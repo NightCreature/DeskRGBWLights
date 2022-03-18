@@ -11,8 +11,8 @@ struct PinConnections
     PinConnections()
     {
         m_ledPin = 10;
-        m_selectionPin = 9;
-        m_onOffPin = 8;
+        m_selectionPin = 8;
+        m_onOffPin = 9;
         m_brightnessControllPin = A0; //this needs to be an analog pin
         m_lcdContrastPin = A1;
 
@@ -25,8 +25,8 @@ struct PinConnections
     }
 
     char m_ledPin = 10;
-    char m_selectionPin = 9;
-    char m_onOffPin = 8;
+    char m_selectionPin = 8;
+    char m_onOffPin = 9;
     char m_brightnessControllPin = A0; //this needs to be an analog pin
     char m_lcdContrastPin = A1;
 
@@ -45,6 +45,7 @@ enum Effects : uint8_t
     SolidGreen,
     SolidBlue,
     SolidWhite,
+    Rainbow,
 
     Off, //This is so we can modulo on this and never get the off state in the loop of effects
     Count
@@ -89,6 +90,7 @@ private:
     bool CheckButtonState(uint8_t pin, bool& oldValue) const;
     void ShowSolidColor(uint32_t color);
     void DisplayEffectName();
+    void updateBrightnessPercentage();
 
     Adafruit_NeoPixel m_ledStrip;
     LiquidCrystal& m_lcd;
@@ -100,6 +102,7 @@ private:
         {Effects::SolidGreen, "Green"},
         {Effects::SolidBlue, "Blue"},
         {Effects::SolidWhite, "White"},
+        {Effects::Rainbow, "Rainbow"},
 
         //New entries before this
         {Effects::Off, "Off"},

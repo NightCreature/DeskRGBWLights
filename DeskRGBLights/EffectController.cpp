@@ -131,6 +131,9 @@ void EffectController::UpdateBrightness()
         m_ledStrip.setBrightness(m_brightnessValue);
 
         m_ledStrip.show();
+
+        updateBrightnessPercentage();
+
     }
 }
 
@@ -178,5 +181,37 @@ void EffectController::DisplayEffectName()
     m_lcd.setCursor(0, 0);
     m_lcd.print("DESK LED LIGHT");
     m_lcd.setCursor(0, 1); //Second line on the display
+    
     m_lcd.print(m_currentEffect->m_name);
+
+    updateBrightnessPercentage();
 }
+
+///-----------------------------------------------------------------------------
+///! @brief   
+///! @remark
+///-----------------------------------------------------------------------------
+void EffectController::updateBrightnessPercentage()
+{
+    uint8_t endPosEffectName = strlen(m_currentEffect->m_name);
+    Serial.print("nr chars in effect name: ");
+    Serial.println(endPosEffectName);
+    if (endPosEffectName < 12)
+    {
+        //we have 4 chars left on the line, put the brightness percentage there
+        uint8_t percentage = map(m_brightnessValue, 0, 255, 0, 100);
+        m_lcd.setCursor(12, 1);
+        if (10 < percentage && percentage < 100)
+        {
+            m_lcd.print(" ");
+        }
+        else if (percentage < 10)
+        {
+            m_lcd.print("  ");
+        }
+        
+        m_lcd.print(percentage);
+        m_lcd.print("%");
+    }
+}
+
