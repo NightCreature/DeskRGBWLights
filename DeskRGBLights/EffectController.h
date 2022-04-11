@@ -47,6 +47,7 @@ enum Effects : uint8_t
     SolidWhite,
     Rainbow,
     KightRider,
+    Twinkle,
 
     Off, //This is so we can modulo on this and never get the off state in the loop of effects
     Count
@@ -92,7 +93,8 @@ private:
     void DisplayEffectName();
     void updateBrightnessPercentage();
 
-    void KnightRider(uint32_t windowSize = 1, uint32_t color = 0xFF0000); //Default is red and one led moves
+    void KnightRider(uint32_t windowSize = 1, uint32_t color = 0x00FF00); //Default is red and one led moves
+    void Twinkle();
 
     Adafruit_NeoPixel m_ledStrip;
     LiquidCrystal& m_lcd;
@@ -106,6 +108,7 @@ private:
         {Effects::SolidWhite, "White"},
         {Effects::Rainbow, "Rainbow"},
         {Effects::KightRider, "KightRider"},
+        {Effects::Twinkle, "Twinkle"},
 
         //New entries before this
         {Effects::Off, "Off"},

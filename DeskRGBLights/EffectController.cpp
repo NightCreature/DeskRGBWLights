@@ -82,7 +82,13 @@ void EffectController::SelectAndShowEffect()
         needsToCallShow = true;
     }
         break;
-
+    case Effects::Twinkle:
+    {
+        Twinkle();
+        m_shouldContinouslyUpdateEffect = true;
+        needsToCallShow = true;
+    }
+        break;
     case Count:
     default:
         break;
@@ -239,63 +245,21 @@ void EffectController::updateBrightnessPercentage()
 
 ///-----------------------------------------------------------------------------
 ///! @brief 
-///! @remark
+///! @remark THe color to pass in has to be in the format the strip expects
 ///-----------------------------------------------------------------------------
 void EffectController::KnightRider(uint32_t windowSize, uint32_t color)
 {
-    //m_ledStrip.clear();
-    ////Base knight rider effect
-    //for (uint32_t counter = 0; counter < m_numberOfLeds; ++counter)
-    //{
-    //    for (uint32_t passCounter = 0; passCounter < m_numberOfLeds; ++passCounter)
-    //    {
-    //        if (passCounter == counter)
-    //        {
-    //            m_ledStrip.setPixelColor(counter, color);
-    //        }
-    //        else
-    //        {
-    //           m_ledStrip.setPixelColor(counter, 0);
-    //        }
-
-    //        m_ledStrip.show();
-    //    }
-
-    //    
-    //    delay(10);
-
-    //}
-
-    //for (int32_t counter = m_numberOfLeds; counter > 0; --counter)
-    //{
-    //    for (uint32_t passCounter = 0; passCounter < m_numberOfLeds; ++passCounter)
-    //    {
-    //        if (passCounter == counter)
-    //        {
-    //            m_ledStrip.setPixelColor(counter, color);
-    //        }
-    //        else
-    //        {
-    //            m_ledStrip.setPixelColor(counter, 0);
-    //        }
-    //        
-    //    }
-    //    m_ledStrip.show();
-    //    delay(2);
-
-    //}
-
     static int moveDirection = 1; //start of moving to the right
-    static float position = 0.0f;
+    static float position = 0.3f;
     static float moveAmount = 0.75f;
 
     m_ledStrip.clear();
 
     //Either we are at the start or end of the strip so invert direction
-    if (position < 0.0f || position > m_numberOfLeds)
+    if (position < 0.2f || position > m_numberOfLeds)
     {
         moveDirection = moveDirection * -1; //Invert direction;
-        position = position < 0.0f ? 0.0f : 119.0f; //return to the beginning of the strip
+        position = position < 0.2f ? 0.3f : 118.8f; //return to the beginning of the strip
     }
     else
     {
@@ -308,5 +272,44 @@ void EffectController::KnightRider(uint32_t windowSize, uint32_t color)
 
     Serial.println(position);
 
-    delay(30);
+    delay(50);
+}
+
+///-----------------------------------------------------------------------------
+///! @brief   
+///! @remark
+///-----------------------------------------------------------------------------
+void EffectController::Twinkle()
+{
+    uint32_t colors[] =
+    { 
+        m_ledStrip.Color(255, 0, 0, 0),
+        m_ledStrip.Color(0, 255, 0, 0),
+        m_ledStrip.Color(0, 0, 255, 0),
+        m_ledStrip.Color(0, 0, 0, 255),
+    };
+
+
+
+    static int callCount = 0;
+    if (callCount >= m_numberOfLeds / 4)
+    {
+        callCount = 0;
+        m_ledStrip.clear();
+        Serial.println("Clear Strip");
+
+    }
+    else
+    {
+        int position = random(m_numberOfLeds); //There are 4 elements to the GRBW colors
+        //Serial.println(position);
+        uint8_t* pixels = m_ledStrip.getPixels();
+        uint32_t* fullColorPixels = (uint32_t*)(pixels);
+        fullColorPixels[position] = colors[random(sizeof(colors) / sizeof(uint32_t))];
+        ++callCount;
+    }
+
+    Serial.println(callCount);
+    delay(10);
+
 }
