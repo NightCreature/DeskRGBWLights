@@ -310,6 +310,6 @@ void EffectController::Twinkle()
     }
 
     Serial.println(callCount);
-    delay(10);
+    delay(50);
 
 }
