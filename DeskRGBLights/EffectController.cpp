@@ -1,6 +1,8 @@
 #include "EffectController.h"
 
 #include <Arduino.h>
+#include "Color.h"
+#include "LedUtilityFunctions.h"
 
 ///-----------------------------------------------------------------------------
 ///! @brief   
@@ -34,6 +36,7 @@ void EffectController::Initialise()
 void EffectController::SelectAndShowEffect()
 {
     bool needsToCallShow = false;
+    m_shouldContinouslyUpdateEffect = false;
     switch (static_cast<Effects>(m_currentEffect->m_index))
     {
     case Off:
@@ -66,11 +69,24 @@ void EffectController::SelectAndShowEffect()
         needsToCallShow = true;
     }
         break;
-
+    case Rainbow:
+    {
+        m_ledStrip.rainbow(0, 255, 255, m_brightnessValue, true);
+        m_ledStrip.show();
+    }
+        break;
+    case KightRider:
+    {
+        KnightRider(5);
+        m_shouldContinouslyUpdateEffect = true;
+        needsToCallShow = true;
+    }
+        break;
 
     case Count:
     default:
         break;
+
     }
 
     if (needsToCallShow)
@@ -95,6 +111,8 @@ bool EffectController::UpdateEffectChange()
         if (m_onOff)
         {
             m_currentEffect = &m_effects[0]; //We dont want off to be our effect here
+            
+            m_lcd.display();//Turn LCD display on again if it was off.
         }
         else
         {
@@ -114,27 +132,33 @@ bool EffectController::UpdateEffectChange()
         }
     }
 
-    return false;
+    return m_shouldContinouslyUpdateEffect;
 }
 
 ///-----------------------------------------------------------------------------
 ///! @brief   
 ///! @remark
 ///-----------------------------------------------------------------------------
-void EffectController::UpdateBrightness()
+bool EffectController::UpdateBrightness()
 {
     uint16_t potentioValue = analogRead(m_pins.m_brightnessControllPin);
+    //since this can occilate we need to ignore a single value change
+    
     int mappedValue = map(potentioValue, 0, 1023, 0, 255);
-    if (m_brightnessValue != mappedValue)
+    if (m_brightnessValue != mappedValue && (potentioValue > m_potentioValue + 1 || potentioValue < m_potentioValue - 1))
     {
         m_brightnessValue = static_cast<uint8_t>(mappedValue);
+        m_potentioValue = potentioValue;
         m_ledStrip.setBrightness(m_brightnessValue);
 
         m_ledStrip.show();
 
         updateBrightnessPercentage();
 
+        return true;
     }
+
+    return false;
 }
 
 ///-----------------------------------------------------------------------------
@@ -194,8 +218,6 @@ void EffectController::DisplayEffectName()
 void EffectController::updateBrightnessPercentage()
 {
     uint8_t endPosEffectName = strlen(m_currentEffect->m_name);
-    Serial.print("nr chars in effect name: ");
-    Serial.println(endPosEffectName);
     if (endPosEffectName < 12)
     {
         //we have 4 chars left on the line, put the brightness percentage there
@@ -215,3 +237,76 @@ void EffectController::updateBrightnessPercentage()
     }
 }
 
+///-----------------------------------------------------------------------------
+///! @brief 
+///! @remark
+///-----------------------------------------------------------------------------
+void EffectController::KnightRider(uint32_t windowSize, uint32_t color)
+{
+    //m_ledStrip.clear();
+    ////Base knight rider effect
+    //for (uint32_t counter = 0; counter < m_numberOfLeds; ++counter)
+    //{
+    //    for (uint32_t passCounter = 0; passCounter < m_numberOfLeds; ++passCounter)
+    //    {
+    //        if (passCounter == counter)
+    //        {
+    //            m_ledStrip.setPixelColor(counter, color);
+    //        }
+    //        else
+    //        {
+    //           m_ledStrip.setPixelColor(counter, 0);
+    //        }
+
+    //        m_ledStrip.show();
+    //    }
+
+    //    
+    //    delay(10);
+
+    //}
+
+    //for (int32_t counter = m_numberOfLeds; counter > 0; --counter)
+    //{
+    //    for (uint32_t passCounter = 0; passCounter < m_numberOfLeds; ++passCounter)
+    //    {
+    //        if (passCounter == counter)
+    //        {
+    //            m_ledStrip.setPixelColor(counter, color);
+    //        }
+    //        else
+    //        {
+    //            m_ledStrip.setPixelColor(counter, 0);
+    //        }
+    //        
+    //    }
+    //    m_ledStrip.show();
+    //    delay(2);
+
+    //}
+
+    static int moveDirection = 1; //start of moving to the right
+    static float position = 0.0f;
+    static float moveAmount = 0.75f;
+
+    m_ledStrip.clear();
+
+    //Either we are at the start or end of the strip so invert direction
+    if (position < 0.0f || position > m_numberOfLeds)
+    {
+        moveDirection = moveDirection * -1; //Invert direction;
+        position = position < 0.0f ? 0.0f : 119.0f; //return to the beginning of the strip
+    }
+    else
+    {
+        //Move the LED block by one led
+        Color colorPassing;
+        colorPassing.m_wrgb = color;
+        DrawPixels(position, windowSize, colorPassing, reinterpret_cast<Color*>(m_ledStrip.getPixels()), m_numberOfLeds);
+        position = position + (static_cast<int>(windowSize) * moveDirection * moveAmount);
+    }
+
+    Serial.println(position);
+
+    delay(30);
+}

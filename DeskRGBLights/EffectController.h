@@ -46,6 +46,7 @@ enum Effects : uint8_t
     SolidBlue,
     SolidWhite,
     Rainbow,
+    KightRider,
 
     Off, //This is so we can modulo on this and never get the off state in the loop of effects
     Count
@@ -76,6 +77,7 @@ public:
         m_currentEffect = &m_effects[Effects::Off];
         m_brightnessValue = 32; // 1/8th brightness so dim
         m_onOff = true;
+        m_shouldContinouslyUpdateEffect = false; //set this when you dont want to write a looping effect
     }
 
     void Initialise();
@@ -83,14 +85,14 @@ public:
     void SelectAndShowEffect();
 
     bool UpdateEffectChange();
-    void UpdateBrightness();
-
-    bool isOn() const { return m_onOff; }
+    bool UpdateBrightness();
 private:
     bool CheckButtonState(uint8_t pin, bool& oldValue) const;
     void ShowSolidColor(uint32_t color);
     void DisplayEffectName();
     void updateBrightnessPercentage();
+
+    void KnightRider(uint32_t windowSize = 1, uint32_t color = 0xFF0000); //Default is red and one led moves
 
     Adafruit_NeoPixel m_ledStrip;
     LiquidCrystal& m_lcd;
@@ -103,12 +105,15 @@ private:
         {Effects::SolidBlue, "Blue"},
         {Effects::SolidWhite, "White"},
         {Effects::Rainbow, "Rainbow"},
+        {Effects::KightRider, "KightRider"},
 
         //New entries before this
         {Effects::Off, "Off"},
     };
     Effect* m_currentEffect = nullptr;
     uint32_t m_numberOfLeds = 0;
+    uint16_t m_potentioValue;
     uint8_t m_brightnessValue; //need to remap a value from 0..1024 range to 0..255
     bool m_onOff = true;
+    bool m_shouldContinouslyUpdateEffect;
 };

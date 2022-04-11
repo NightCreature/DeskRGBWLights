@@ -117,13 +117,23 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Color.h" />
     <ClInclude Include="Effect.h" />
     <ClInclude Include="EffectcController.h" />
+    <ClInclude Include="LedUtilityFunctions.h">
+      <SubType>
+      </SubType>
+    </ClInclude>
     <ClInclude Include="__vm\.DeskRGBLights.vsarduino.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Color.cpp" />
     <ClCompile Include="Effect.cpp" />
     <ClCompile Include="EffectController.cpp" />
+    <ClCompile Include="LedUtilityFunctions.cpp">
+      <SubType>
+      </SubType>
+    </ClCompile>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
