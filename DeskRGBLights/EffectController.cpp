@@ -270,8 +270,6 @@ void EffectController::KnightRider(uint32_t windowSize, uint32_t color)
         position = position + (static_cast<int>(windowSize) * moveDirection * moveAmount);
     }
 
-    Serial.println(position);
-
     delay(50);
 }
 
@@ -281,35 +279,7 @@ void EffectController::KnightRider(uint32_t windowSize, uint32_t color)
 ///-----------------------------------------------------------------------------
 void EffectController::Twinkle()
 {
-    uint32_t colors[] =
-    { 
-        m_ledStrip.Color(255, 0, 0, 0),
-        m_ledStrip.Color(0, 255, 0, 0),
-        m_ledStrip.Color(0, 0, 255, 0),
-        m_ledStrip.Color(0, 0, 0, 255),
-    };
-
-
-
-    static int callCount = 0;
-    if (callCount >= m_numberOfLeds / 4)
-    {
-        callCount = 0;
-        m_ledStrip.clear();
-        Serial.println("Clear Strip");
-
-    }
-    else
-    {
-        int position = random(m_numberOfLeds); //There are 4 elements to the GRBW colors
-        //Serial.println(position);
-        uint8_t* pixels = m_ledStrip.getPixels();
-        uint32_t* fullColorPixels = (uint32_t*)(pixels);
-        fullColorPixels[position] = colors[random(sizeof(colors) / sizeof(uint32_t))];
-        ++callCount;
-    }
-
-    Serial.println(callCount);
+    fadeToBlackBy(m_ledStrip.getPixels(), m_numberOfLeds, 64);
+    reinterpret_cast<uint32_t*>(m_ledStrip.getPixels())[random(m_numberOfLeds)] = m_ledStrip.Color(random(255), random(255), random(255), random(64));
     delay(250);
-
 }

@@ -1,14 +1,7 @@
 .vs/
+DeskRGBLights/__vm/
+DeskRGBLights/Debug/
+DeskRGBLights/Release/
 espPinOut.jpg
 LEDStripDetails.pdf
 SuperNovaSetup.exe
-DeskRGBLights/Release/
-DeskRGBLights/Release/Color.cpp.d
-DeskRGBLights/Release/Color.cpp.o
-DeskRGBLights/Release/DeskRGBLights.log
-DeskRGBLights/Release/LedUtilityFunctions.cpp.d
-DeskRGBLights/Release/LedUtilityFunctions.cpp.o
-DeskRGBLights/Release/vc143.pdb
-DeskRGBLights/Release/DeskRGBLights.tlog/CL.command.1.tlog
-DeskRGBLights/Release/DeskRGBLights.tlog/DeskRGBLights.lastbuildstate
-DeskRGBLights/Release/DeskRGBLights.tlog/unsuccessfulbuild
