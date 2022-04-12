@@ -27,6 +27,8 @@ void EffectController::Initialise()
     m_ledStrip.setBrightness(m_brightnessValue); // Set BRIGHTNESS to about 1/5 (max = 255)
 
     DisplayEffectName();
+
+    m_ledStrip.WriteOffsetsOut();
 }
 
 ///-----------------------------------------------------------------------------
@@ -88,7 +90,14 @@ void EffectController::SelectAndShowEffect()
         m_shouldContinouslyUpdateEffect = true;
         needsToCallShow = true;
     }
-        break;
+    break;
+    case Effects::XmasTwinkle:
+    {
+        XmasTwinkle();
+        m_shouldContinouslyUpdateEffect = true;
+        needsToCallShow = true;
+    }
+    break;
     case Count:
     default:
         break;
@@ -266,7 +275,7 @@ void EffectController::KnightRider(uint32_t windowSize, uint32_t color)
         //Move the LED block by one led
         Color colorPassing;
         colorPassing.m_wrgb = color;
-        DrawPixels(position, windowSize, colorPassing, reinterpret_cast<Color*>(m_ledStrip.getPixels()), m_numberOfLeds);
+        DrawPixels(position, windowSize, colorPassing, m_ledStrip);
         position = position + (static_cast<int>(windowSize) * moveDirection * moveAmount);
     }
 
@@ -279,7 +288,27 @@ void EffectController::KnightRider(uint32_t windowSize, uint32_t color)
 ///-----------------------------------------------------------------------------
 void EffectController::Twinkle()
 {
-    fadeToBlackBy(m_ledStrip.getPixels(), m_numberOfLeds, 64);
-    reinterpret_cast<uint32_t*>(m_ledStrip.getPixels())[random(m_numberOfLeds)] = m_ledStrip.Color(random(255), random(255), random(255), random(64));
-    delay(250);
+    fadeToBlackBy(m_ledStrip, 64);
+    m_ledStrip.setPixelColor(random(m_numberOfLeds), m_ledStrip.Color(random(255), random(255), random(255), random(64)));
+    delay(250); //These big delays stop us from changing effects this is not nice
+}
+
+///-----------------------------------------------------------------------------
+///! @brief   
+///! @remark this is basically the same as twinkle accept the colors are fixed to red and green
+///-----------------------------------------------------------------------------
+void EffectController::XmasTwinkle()
+{
+    fadeToBlackBy(m_ledStrip, 64);
+    uint32_t color;
+    if (random(2))
+    {
+        color = m_ledStrip.Color(255,0,0,0);
+    }
+    else
+    {
+        color = m_ledStrip.Color(0, 255, 0, 0);
+    }
+    m_ledStrip.setPixelColor(random(m_numberOfLeds + 1), color);
+    delay(250); //These big delays stop us from changing effects this is not nice
 }

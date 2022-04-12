@@ -10,6 +10,8 @@
 #include "Color.h"
 #include "lib8tion.h"
 
+#include <Adafruit_NeoPixel.h>
+
 inline Color ColorFraction(Color color, float fraction)
 {
     //Reduces color intensity by the fraction
@@ -24,51 +26,51 @@ inline Color ColorFraction(Color color, float fraction)
     return retVal;
 }
 
-
-//C version
-inline void DrawPixels(float position, float amountToDraw, Color color, Color* colors, uint32_t n)
+///-----------------------------------------------------------------------------
+///! @brief   
+///! @remark
+///-----------------------------------------------------------------------------
+inline void DrawPixels(float position, float amountToDraw, Color color, Adafruit_NeoPixel& ledStrip)
 {
     //have to figure out if position is on a pixel boundary or not
-    //figure out the start fractional
+//figure out the start fractional
     uint32_t startIndex = static_cast<uint32_t>(position);
     float remainingPixels = position - startIndex; //this will give us the fractional part of start pos
 
     if (remainingPixels > 0.0f)
     {
         //need to set a fractional color value here
-        colors[startIndex] = ColorFraction(color, remainingPixels);
+
+        ledStrip.setPixelColor(startIndex, ColorFraction(color, remainingPixels).m_wrgb);
         startIndex++; //add one because we always start one further
     }
 
-    remainingPixels = min(amountToDraw, n - position); //init this with the rest of the pixels we should color;
+    remainingPixels = min(amountToDraw, ledStrip.numPixels() - position); //init this with the rest of the pixels we should color;
     while (remainingPixels > 1.0) //While we have whole pixels to color lets do that
     {
-        colors[startIndex] = color;
+        ledStrip.setPixelColor(startIndex, color.m_wrgb);
         ++startIndex;
         remainingPixels -= 1.0f;
     }
 
     if (remainingPixels > 0.0f)//we have some left over color we need to color
     {
-        colors[startIndex] = ColorFraction(color, remainingPixels);
+        ledStrip.setPixelColor(startIndex, ColorFraction(color, remainingPixels).m_wrgb);
     }
 }
 
-//C++ array length safe call
-template< uint32_t n>
-inline void DrawPixels(float position, float amountToDraw, Color color, Color(&colors)[n])
-{
-    DrawPixels(position, amountToDraw, color, &color, n);
-}
-
-//Working in bytes here
-inline void fadeToBlackBy(uint8_t* leds, uint16_t numLeds, uint8_t fadeBy)
+///-----------------------------------------------------------------------------
+///! @brief   
+///! @remark
+///-----------------------------------------------------------------------------
+inline void fadeToBlackBy(Adafruit_NeoPixel& ledStrip, uint8_t fadeBy)
 {
     uint8_t fadeFactor = 255 - fadeBy;
-    for (uint16_t counter = 0; counter < numLeds * 4; counter += 4)
+    uint8_t* pixels = ledStrip.getPixels();
+    for (uint16_t counter = 0; counter < ledStrip.numPixels() * 4; counter += 4)
     {
-        nscale8x3(leds[counter], leds[counter + 1], leds[counter + 2], fadeFactor);
+        nscale8x3(pixels[counter], pixels[counter + 1], pixels[counter + 2], fadeFactor);
         uint8_t tempValue = 255;
-        nscale8x3(leds[counter + 3], tempValue, tempValue, fadeFactor);
+        nscale8x3(pixels[counter + 3], tempValue, tempValue, fadeFactor);
     }
 }
