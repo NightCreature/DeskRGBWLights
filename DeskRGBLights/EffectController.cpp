@@ -27,8 +27,6 @@ void EffectController::Initialise()
     m_ledStrip.setBrightness(m_brightnessValue); // Set BRIGHTNESS to about 1/5 (max = 255)
 
     DisplayEffectName();
-
-    m_ledStrip.WriteOffsetsOut();
 }
 
 ///-----------------------------------------------------------------------------
