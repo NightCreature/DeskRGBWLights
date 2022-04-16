@@ -74,3 +74,18 @@ inline void fadeToBlackBy(Adafruit_NeoPixel& ledStrip, uint8_t fadeBy)
         nscale8x3(pixels[counter + 3], tempValue, tempValue, fadeFactor);
     }
 }
+
+///-----------------------------------------------------------------------------
+///! @brief   
+///! @remark
+///-----------------------------------------------------------------------------
+inline uint32_t fadeToBlackBy(uint32_t color, uint8_t fadeBy)
+{
+    uint8_t fadeFactor = 255 - fadeBy;
+    Color workColor;
+    workColor.m_wrgb = color;
+    nscale8x3(workColor.m_r, workColor.m_g, workColor.m_g, fadeFactor);
+    uint8_t tempValue = 255;
+    nscale8x3(workColor.m_w, tempValue, tempValue, fadeFactor);
+    return workColor.m_wrgb;
+}

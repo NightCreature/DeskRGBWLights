@@ -6,6 +6,29 @@
 //This is based on the FASTLed CRGB structure
 struct Color
 {
+    Color() :
+        m_wrgb(0)
+    {}
+
+    Color(uint8_t r, uint8_t g, uint8_t b) :
+        m_r(r),
+        m_g(g),
+        m_b(b)
+    { }
+
+    Color(uint8_t r, uint8_t g, uint8_t b, uint8_t w) :
+        Color(r, g, b)
+    { 
+        m_w = w;
+    }
+
+    Color(uint32_t color) :
+        m_wrgb(color) { }
+
+    Color(uint8_t color) :
+        Color(color, color, color, color)
+    { }
+
     union
     {
         //Helper so we can access the component channels

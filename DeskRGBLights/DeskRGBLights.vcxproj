@@ -120,6 +120,7 @@
     <ClInclude Include="Color.h" />
     <ClInclude Include="Effect.h" />
     <ClInclude Include="EffectcController.h" />
+    <ClInclude Include="FireworkEffect.h" />
     <ClInclude Include="LedUtilityFunctions.h">
       <SubType>
       </SubType>
@@ -131,6 +132,7 @@
     <ClCompile Include="Color.cpp" />
     <ClCompile Include="Effect.cpp" />
     <ClCompile Include="EffectController.cpp" />
+    <ClCompile Include="FireworkEffect.cpp" />
     <ClCompile Include="LedUtilityFunctions.cpp">
       <SubType>
       </SubType>

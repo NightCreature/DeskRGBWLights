@@ -5,6 +5,7 @@
 #include <LiquidCrystal.h>
 #include "ButtonState.h"
 #include "Effect.h"
+#include "FireworkEffect.h"
 
 struct PinConnections
 {
@@ -49,6 +50,7 @@ enum Effects : uint8_t
     KightRider,
     Twinkle, 
     XmasTwinkle,
+    Firework,
 
     Off, //This is so we can modulo on this and never get the off state in the loop of effects
     Count,
@@ -72,6 +74,7 @@ public:
     //}
 
     EffectController(LiquidCrystal& lcd, const PinConnections& pinToUse, uint32_t numberOfLeds) :
+        m_fireWork(m_ledStrip, 3),
         m_lcd(lcd),
         m_pins(pinToUse),
         m_numberOfLeds(numberOfLeds)
@@ -100,6 +103,7 @@ private:
     void XmasTwinkle();
 
     Adafruit_NeoPixel m_ledStrip;
+    FireworkEffect m_fireWork;
     LiquidCrystal& m_lcd;
     PinConnections m_pins;
     ButtonState m_currentState;
@@ -113,6 +117,7 @@ private:
         {Effects::KightRider, "KightRider"},
         {Effects::Twinkle, "Twinkle"},
         {Effects::XmasTwinkle, "XmasTwinkle"},
+        {Effects::Firework, "FireWork"},
 
         //New entries before this
         {Effects::Off, "Off"},

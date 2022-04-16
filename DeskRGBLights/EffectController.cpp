@@ -35,78 +35,70 @@ void EffectController::Initialise()
 ///-----------------------------------------------------------------------------
 void EffectController::SelectAndShowEffect()
 {
-    bool needsToCallShow = false;
     m_shouldContinouslyUpdateEffect = false;
     switch (static_cast<Effects>(m_currentEffect->m_index))
     {
     case Off:
     {
         m_ledStrip.clear();
-        needsToCallShow = true;
     }
         break;
     case SolidRed:
     {
         ShowSolidColor(m_ledStrip.Color(255, 0, 0, 0));
-        needsToCallShow = true;
     }
         break;
     case SolidGreen:
     {
         ShowSolidColor(m_ledStrip.Color(0, 255, 0, 0));
-        needsToCallShow = true;
     }
         break;
     case SolidBlue:
     {
         ShowSolidColor(m_ledStrip.Color(0, 0, 255, 0));
-        needsToCallShow = true;
     }
         break;
     case SolidWhite:
     {
         ShowSolidColor(m_ledStrip.Color(0, 0, 0, 255));
-        needsToCallShow = true;
     }
         break;
     case Rainbow:
     {
         m_ledStrip.rainbow(0, 255, 255, m_brightnessValue, true);
-        m_ledStrip.show();
     }
         break;
     case KightRider:
     {
         KnightRider(5);
         m_shouldContinouslyUpdateEffect = true;
-        needsToCallShow = true;
     }
         break;
     case Effects::Twinkle:
     {
         Twinkle();
         m_shouldContinouslyUpdateEffect = true;
-        needsToCallShow = true;
     }
     break;
     case Effects::XmasTwinkle:
     {
         XmasTwinkle();
         m_shouldContinouslyUpdateEffect = true;
-        needsToCallShow = true;
     }
     break;
+    case Effects::Firework:
+    {
+        m_fireWork.Update();
+        m_shouldContinouslyUpdateEffect = true;
+    }
     case Count:
     default:
         break;
 
     }
 
-    if (needsToCallShow)
-    {
-        m_ledStrip.show();
-    }
-
+    m_ledStrip.show();
+ 
     DisplayEffectName();
 }
 
