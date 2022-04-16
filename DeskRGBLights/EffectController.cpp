@@ -279,7 +279,8 @@ void EffectController::KnightRider(uint32_t windowSize, uint32_t color)
 void EffectController::Twinkle()
 {
     fadeToBlackBy(m_ledStrip, 64);
-    m_ledStrip.setPixelColor(random(m_numberOfLeds), m_ledStrip.Color(random(255), random(255), random(255), random(64)));
+
+    m_ledStrip.setPixelColor(random(m_numberOfLeds), Adafruit_NeoPixel::ColorHSV(0 + (random(255) * 255 * 65536) / m_ledStrip.numPixels(), 255, 255));
     delay(250); //These big delays stop us from changing effects this is not nice
 }
 
