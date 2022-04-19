@@ -120,24 +120,32 @@
     <ClInclude Include="Color.h" />
     <ClInclude Include="Effect.h" />
     <ClInclude Include="EffectcController.h" />
+    <ClInclude Include="FireEffect.h" />
     <ClInclude Include="FireworkEffect.h" />
+    <ClInclude Include="KnightRider.h" />
     <ClInclude Include="LedUtilityFunctions.h">
       <SubType>
       </SubType>
     </ClInclude>
     <ClInclude Include="lib8tion.h" />
+    <ClInclude Include="Timer.h" />
+    <ClInclude Include="TwinkleEffect.h" />
     <ClInclude Include="__vm\.DeskRGBLights.vsarduino.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Color.cpp" />
     <ClCompile Include="Effect.cpp" />
     <ClCompile Include="EffectController.cpp" />
+    <ClCompile Include="FireEffect.cpp" />
     <ClCompile Include="FireworkEffect.cpp" />
+    <ClCompile Include="KnightRider.cpp" />
     <ClCompile Include="LedUtilityFunctions.cpp">
       <SubType>
       </SubType>
     </ClCompile>
     <ClCompile Include="lib8tion.cpp" />
+    <ClCompile Include="Timer.cpp" />
+    <ClCompile Include="TwinkleEffect.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -8,9 +8,33 @@
 ///! @brief   
 ///! @remark
 ///-----------------------------------------------------------------------------
-void EffectController::Initialise()
+EffectController::EffectController(LiquidCrystal& lcd, const PinConnections& pinToUse) :
+    m_lcd(lcd),
+    m_pins(pinToUse),
+    m_effectIndex(-1)
 {
-    m_ledStrip = Adafruit_NeoPixel(m_numberOfLeds, m_pins.m_ledPin, NEO_GRBW + NEO_KHZ800);
+    m_currentEffect = nullptr; //Equivalent to off
+    m_brightnessValue = 32; // 1/8th brightness so dim
+
+    //Add Effects
+    m_effects[0] = new SolidColor("Red", m_ledStrip, Adafruit_NeoPixel::Color(255, 0, 0));
+    m_effects[1] = new SolidColor("Green", m_ledStrip, Adafruit_NeoPixel::Color(0, 255, 0));
+    m_effects[2] = new SolidColor("Blue", m_ledStrip, Adafruit_NeoPixel::Color(0, 0, 255));
+    m_effects[3] = new SolidColor("White", m_ledStrip, Adafruit_NeoPixel::Color(0, 0, 0, 255));
+    m_effects[4] = new SolidColor("Super White", m_ledStrip, Adafruit_NeoPixel::Color(255, 255, 255, 255));
+    m_effects[5] = new KnightRider(m_ledStrip, 3, Adafruit_NeoPixel::Color(255, 0, 0));
+    m_effects[6] = new TwinkleEffect(m_ledStrip);
+    m_effects[7] = new XMasTwinkle(m_ledStrip);
+    m_effects[8] = new FireworkEffect(m_ledStrip, 3);
+}
+
+///-----------------------------------------------------------------------------
+///! @brief   
+///! @remark
+///-----------------------------------------------------------------------------
+void EffectController::Initialise(uint16_t numberOfLeds)
+{
+    m_ledStrip = Adafruit_NeoPixel(numberOfLeds, m_pins.m_ledPin, NEO_GRBW + NEO_KHZ800);
 
     pinMode(m_pins.m_onOffPin, INPUT);
     pinMode(m_pins.m_selectionPin, INPUT);
@@ -33,73 +57,46 @@ void EffectController::Initialise()
 ///! @brief   
 ///! @remark
 ///-----------------------------------------------------------------------------
-void EffectController::SelectAndShowEffect()
+bool EffectController::Update(float elapsedTime)
 {
-    m_shouldContinouslyUpdateEffect = false;
-    switch (static_cast<Effects>(m_currentEffect->m_index))
+    if (UpdateBrightness())
     {
-    case Off:
-    {
-        m_ledStrip.clear();
+        updateBrightnessPercentage();
     }
-        break;
-    case SolidRed:
-    {
-        ShowSolidColor(m_ledStrip.Color(255, 0, 0, 0));
-    }
-        break;
-    case SolidGreen:
-    {
-        ShowSolidColor(m_ledStrip.Color(0, 255, 0, 0));
-    }
-        break;
-    case SolidBlue:
-    {
-        ShowSolidColor(m_ledStrip.Color(0, 0, 255, 0));
-    }
-        break;
-    case SolidWhite:
-    {
-        ShowSolidColor(m_ledStrip.Color(0, 0, 0, 255));
-    }
-        break;
-    case Rainbow:
-    {
-        m_ledStrip.rainbow(0, 255, 255, m_brightnessValue, true);
-    }
-        break;
-    case KightRider:
-    {
-        KnightRider(5);
-        m_shouldContinouslyUpdateEffect = true;
-    }
-        break;
-    case Effects::Twinkle:
-    {
-        Twinkle();
-        m_shouldContinouslyUpdateEffect = true;
-    }
-    break;
-    case Effects::XmasTwinkle:
-    {
-        XmasTwinkle();
-        m_shouldContinouslyUpdateEffect = true;
-    }
-    break;
-    case Effects::Firework:
-    {
-        m_fireWork.Update();
-        m_shouldContinouslyUpdateEffect = true;
-    }
-    case Count:
-    default:
-        break;
 
+    bool retVal = UpdateEffectChange();
+    if (retVal)
+    {
+        //Activate Effect here, this will also allow us to time out the display for everything
+        SelectAndShowEffect();
+        DisplayEffectName();
+    }
+    
+    if (m_currentEffect != nullptr)
+    {
+        m_currentEffect->Update(elapsedTime);
     }
 
     m_ledStrip.show();
- 
-    DisplayEffectName();
+
+    return retVal;
+}
+
+///-----------------------------------------------------------------------------
+///! @brief   
+///! @remark
+///-----------------------------------------------------------------------------
+void EffectController::SelectAndShowEffect()
+{
+    if (m_currentEffect != nullptr)
+    {
+        //There is some pointer math here to select the next effect in the array might just keep an index around
+        m_currentEffect->Initialise();
+    }
+    else //off state
+    {
+        m_ledStrip.clear();
+    }
 }
 
 ///-----------------------------------------------------------------------------
@@ -112,32 +109,33 @@ bool EffectController::UpdateEffectChange()
     if (CheckButtonState(m_pins.m_onOffPin, m_currentState.m_onOffValue))
     {
         //this indicates we pressed the on off button
-        m_onOff = !m_onOff;
-        if (m_onOff)
+        if (m_currentEffect != nullptr)
         {
-            m_currentEffect = &m_effects[0]; //We dont want off to be our effect here
-            
-            m_lcd.display();//Turn LCD display on again if it was off.
+            m_currentEffect = nullptr; //We dont want off to be our effect here
+            m_effectIndex = -1;
         }
         else
         {
-            m_currentEffect = &m_effects[Effects::Off];
+            m_effectIndex = 0;
+            m_currentEffect = m_effects[m_effectIndex];
+            
         }
         return true;
     }
 
     //This is only allowed if the strip is set to be on
-    if (m_onOff)
+    if (m_currentEffect != nullptr)
     {
         //pressed selection button so up the 
         if (CheckButtonState(m_pins.m_selectionPin, m_currentState.m_selectionValue))
         {
-            m_currentEffect = &m_effects[static_cast<Effects>((m_currentEffect->m_index + 1) % static_cast<int>(Effects::Off))];
+            m_effectIndex = (m_effectIndex + 1) % m_numberOfEffects;
+            m_currentEffect = m_effects[m_effectIndex];
             return true;
         }
     }
 
-    return m_shouldContinouslyUpdateEffect;
+    return false;
 }
 
 ///-----------------------------------------------------------------------------
@@ -155,10 +153,6 @@ bool EffectController::UpdateBrightness()
         m_brightnessValue = static_cast<uint8_t>(mappedValue);
         m_potentioValue = potentioValue;
         m_ledStrip.setBrightness(m_brightnessValue);
-
-        m_ledStrip.show();
-
-        updateBrightnessPercentage();
 
         return true;
     }
@@ -191,18 +185,6 @@ bool EffectController::CheckButtonState(uint8_t pin, bool& oldValue) const
 ///! @brief   
 ///! @remark
 ///-----------------------------------------------------------------------------
-void EffectController::ShowSolidColor(uint32_t color)
-{
-    for (uint16_t counter = 0; counter < m_ledStrip.numPixels(); ++counter)
-    {
-        m_ledStrip.setPixelColor(counter, color);
-    }
-}
-
-///-----------------------------------------------------------------------------
-///! @brief   
-///! @remark
-///-----------------------------------------------------------------------------
 void EffectController::DisplayEffectName()
 {
     //These should match the names in Effects
@@ -211,7 +193,14 @@ void EffectController::DisplayEffectName()
     m_lcd.print("DESK LED LIGHT");
     m_lcd.setCursor(0, 1); //Second line on the display
     
-    m_lcd.print(m_currentEffect->m_name);
+    if (m_currentEffect != nullptr)
+    {
+        m_lcd.print(m_currentEffect->GetEffectName());
+    }
+    else
+    {
+        m_lcd.print("Off");
+    }
 
     updateBrightnessPercentage();
 }
@@ -222,7 +211,11 @@ void EffectController::DisplayEffectName()
 ///-----------------------------------------------------------------------------
 void EffectController::updateBrightnessPercentage()
 {
-    uint8_t endPosEffectName = strlen(m_currentEffect->m_name);
+    uint8_t endPosEffectName = 3;
+    if (m_currentEffect != nullptr)
+    {
+        uint8_t endPosEffectName = strlen(m_currentEffect->GetEffectName());
+    }
     if (endPosEffectName < 12)
     {
         //we have 4 chars left on the line, put the brightness percentage there
@@ -240,66 +233,4 @@ void EffectController::updateBrightnessPercentage()
         m_lcd.print(percentage);
         m_lcd.print("%");
     }
-}
-
-///-----------------------------------------------------------------------------
-///! @brief 
-///! @remark THe color to pass in has to be in the format the strip expects
-///-----------------------------------------------------------------------------
-void EffectController::KnightRider(uint32_t windowSize, uint32_t color)
-{
-    static int moveDirection = 1; //start of moving to the right
-    static float position = 0.3f;
-    static float moveAmount = 0.75f;
-
-    m_ledStrip.clear();
-
-    //Either we are at the start or end of the strip so invert direction
-    if (position < 0.2f || position > m_numberOfLeds)
-    {
-        moveDirection = moveDirection * -1; //Invert direction;
-        position = position < 0.2f ? 0.3f : 118.8f; //return to the beginning of the strip
-    }
-    else
-    {
-        //Move the LED block by one led
-        Color colorPassing;
-        colorPassing.m_wrgb = color;
-        DrawPixels(position, windowSize, colorPassing, m_ledStrip);
-        position = position + (static_cast<int>(windowSize) * moveDirection * moveAmount);
-    }
-
-    delay(50);
-}
-
-///-----------------------------------------------------------------------------
-///! @brief   
-///! @remark
-///-----------------------------------------------------------------------------
-void EffectController::Twinkle()
-{
-    fadeToBlackBy(m_ledStrip, 64);
-
-    m_ledStrip.setPixelColor(random(m_numberOfLeds), Adafruit_NeoPixel::ColorHSV(0 + (random(255) * 255 * 65536) / m_ledStrip.numPixels(), 255, 255));
-    delay(250); //These big delays stop us from changing effects this is not nice
-}
-
-///-----------------------------------------------------------------------------
-///! @brief   
-///! @remark this is basically the same as twinkle accept the colors are fixed to red and green
-///-----------------------------------------------------------------------------
-void EffectController::XmasTwinkle()
-{
-    fadeToBlackBy(m_ledStrip, 64);
-    uint32_t color;
-    if (random(2))
-    {
-        color = m_ledStrip.Color(255,0,0,0);
-    }
-    else
-    {
-        color = m_ledStrip.Color(0, 255, 0, 0);
-    }
-    m_ledStrip.setPixelColor(random(m_numberOfLeds + 1), color);
-    delay(250); //These big delays stop us from changing effects this is not nice
 }

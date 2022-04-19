@@ -6,6 +6,8 @@
 #include "ButtonState.h"
 #include "Effect.h"
 #include "FireworkEffect.h"
+#include "TwinkleEffect.h"
+#include "KnightRider.h"
 
 struct PinConnections
 {
@@ -39,53 +41,15 @@ struct PinConnections
     char m_data3Pin = 2;
 };
 
-enum Effects : uint8_t 
-{
-
-    SolidRed = 0,
-    SolidGreen,
-    SolidBlue,
-    SolidWhite,
-    Rainbow,
-    KightRider,
-    Twinkle, 
-    XmasTwinkle,
-    Firework,
-
-    Off, //This is so we can modulo on this and never get the off state in the loop of effects
-    Count,
-};
-
-
-
 //Houses the effects we can run on the strip
 class EffectController
 {
 public:
-    //Since the LiquidCrystal code is an asshole
-    //EffectController() //:
-    //    //m_lcd(m_pins.m_rsPin, m_pins.m_enablePin, m_pins.m_data0Pin, m_pins.m_data1Pin, m_pins.m_data2Pin, m_pins.m_data3Pin) 
-    //{}
-    //EffectController(const PinConnections& pinsToUse, uint32_t numberOfLeds) :
-    //    m_pins(pinsToUse),
-    //    m_lcd(m_pins.m_rsPin, m_pins.m_enablePin, m_pins.m_data0Pin, m_pins.m_data1Pin, m_pins.m_data2Pin, m_pins.m_data3Pin)
-    //{
-    //    m_ledStrip = Adafruit_NeoPixel(numberOfLeds, m_pins.m_ledPin, NEO_GRBW + NEO_KHZ800);
-    //}
+    EffectController(LiquidCrystal& lcd, const PinConnections& pinToUse);
 
-    EffectController(LiquidCrystal& lcd, const PinConnections& pinToUse, uint32_t numberOfLeds) :
-        m_fireWork(m_ledStrip, 3),
-        m_lcd(lcd),
-        m_pins(pinToUse),
-        m_numberOfLeds(numberOfLeds)
-    {
-        m_currentEffect = &m_effects[Effects::Off];
-        m_brightnessValue = 32; // 1/8th brightness so dim
-        m_onOff = true;
-        m_shouldContinouslyUpdateEffect = false; //set this when you dont want to write a looping effect
-    }
+    void Initialise(uint16_t numberOfLeds);
 
-    void Initialise();
+    bool Update(float elapsedTime);
 
     void SelectAndShowEffect();
 
@@ -93,39 +57,19 @@ public:
     bool UpdateBrightness();
 private:
     bool CheckButtonState(uint8_t pin, bool& oldValue) const;
-    void ShowSolidColor(uint32_t color);
     void DisplayEffectName();
     void updateBrightnessPercentage();
 
-    
-    void KnightRider(uint32_t windowSize = 1, uint32_t color = Adafruit_NeoPixel::Color(255, 0, 0, 0)); //Default is red and one led moves
-    void Twinkle();
-    void XmasTwinkle();
+    const static uint8_t m_numberOfEffects = 9; //Modify this when you add a new effect
 
     Adafruit_NeoPixel m_ledStrip;
-    FireworkEffect m_fireWork;
     LiquidCrystal& m_lcd;
     PinConnections m_pins;
     ButtonState m_currentState;
-    Effect m_effects[Effects::Count] =
-    {
-        {Effects::SolidRed, "Red"},
-        {Effects::SolidGreen, "Green"},
-        {Effects::SolidBlue, "Blue"},
-        {Effects::SolidWhite, "White"},
-        {Effects::Rainbow, "Rainbow"},
-        {Effects::KightRider, "KightRider"},
-        {Effects::Twinkle, "Twinkle"},
-        {Effects::XmasTwinkle, "XmasTwinkle"},
-        {Effects::Firework, "FireWork"},
 
-        //New entries before this
-        {Effects::Off, "Off"},
-    };
+    Effect* m_effects[m_numberOfEffects];
     Effect* m_currentEffect = nullptr;
-    uint32_t m_numberOfLeds = 0;
     uint16_t m_potentioValue;
     uint8_t m_brightnessValue; //need to remap a value from 0..1024 range to 0..255
-    bool m_onOff = true;
-    bool m_shouldContinouslyUpdateEffect;
+    int8_t m_effectIndex;
 };

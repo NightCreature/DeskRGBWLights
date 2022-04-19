@@ -1,5 +1,6 @@
 #pragma once
 #include <Adafruit_NeoPixel.h>
+#include "Effect.h"
 
 struct FireWorkState
 {
@@ -26,19 +27,20 @@ struct FireWorkState
     bool m_new = false;
 };
 
-class FireworkEffect
+class FireworkEffect : public Effect
 {
 public:
     FireworkEffect() = delete;
     FireworkEffect(Adafruit_NeoPixel& ledStrip, int numberOfSimultaneousFireworks) :
-        m_ledStrip(ledStrip),
+        Effect("Firework", ledStrip),
         m_numberOfSimultaneousFireworks(min(numberOfSimultaneousFireworks, maxActiveFireworks)),
         m_currentActiveNumberFireworks(0)
     {
     }
 
 
-    void Update(); //Call this each loop
+    void Initialise();
+    void Update(float elapsedTime); //Call this each loop
 
     void Reset()
     {
@@ -50,7 +52,6 @@ private:
     static const int maxActiveFireworks = 5;
     FireWorkState m_activeFireWorks[maxActiveFireworks];
 
-    Adafruit_NeoPixel& m_ledStrip;
     int m_numberOfSimultaneousFireworks = maxActiveFireworks;
     int m_currentActiveNumberFireworks = 0;
 };
